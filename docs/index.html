@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<HTML lang = "en">
+<HEAD>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Modeling Bounded Confidence Updating in Julia IV</title>
+  
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      TeX: { equationNumbers: { autoNumber: "AMS" } }
+    });
+  </script>
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script>
+
+  
+<style>
+pre.hljl {
+    border: 1px solid #ccc;
+    margin: 5px;
+    padding: 5px;
+    overflow-x: auto;
+    color: rgb(68,68,68); background-color: rgb(251,251,251); }
+pre.hljl > span.hljl-t { }
+pre.hljl > span.hljl-w { }
+pre.hljl > span.hljl-e { }
+pre.hljl > span.hljl-eB { }
+pre.hljl > span.hljl-o { }
+pre.hljl > span.hljl-k { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kc { color: rgb(59,151,46); font-style: italic; }
+pre.hljl > span.hljl-kd { color: rgb(214,102,97); font-style: italic; }
+pre.hljl > span.hljl-kn { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kp { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kr { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-kt { color: rgb(148,91,176); font-weight: bold; }
+pre.hljl > span.hljl-n { }
+pre.hljl > span.hljl-na { }
+pre.hljl > span.hljl-nb { }
+pre.hljl > span.hljl-nbp { }
+pre.hljl > span.hljl-nc { }
+pre.hljl > span.hljl-ncB { }
+pre.hljl > span.hljl-nd { color: rgb(214,102,97); }
+pre.hljl > span.hljl-ne { }
+pre.hljl > span.hljl-neB { }
+pre.hljl > span.hljl-nf { color: rgb(66,102,213); }
+pre.hljl > span.hljl-nfm { color: rgb(66,102,213); }
+pre.hljl > span.hljl-np { }
+pre.hljl > span.hljl-nl { }
+pre.hljl > span.hljl-nn { }
+pre.hljl > span.hljl-no { }
+pre.hljl > span.hljl-nt { }
+pre.hljl > span.hljl-nv { }
+pre.hljl > span.hljl-nvc { }
+pre.hljl > span.hljl-nvg { }
+pre.hljl > span.hljl-nvi { }
+pre.hljl > span.hljl-nvm { }
+pre.hljl > span.hljl-l { }
+pre.hljl > span.hljl-ld { color: rgb(148,91,176); font-style: italic; }
+pre.hljl > span.hljl-s { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sa { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sb { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sc { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sd { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sdB { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sdC { color: rgb(201,61,57); }
+pre.hljl > span.hljl-se { color: rgb(59,151,46); }
+pre.hljl > span.hljl-sh { color: rgb(201,61,57); }
+pre.hljl > span.hljl-si { }
+pre.hljl > span.hljl-so { color: rgb(201,61,57); }
+pre.hljl > span.hljl-sr { color: rgb(201,61,57); }
+pre.hljl > span.hljl-ss { color: rgb(201,61,57); }
+pre.hljl > span.hljl-ssB { color: rgb(201,61,57); }
+pre.hljl > span.hljl-nB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nbB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nfB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nh { color: rgb(59,151,46); }
+pre.hljl > span.hljl-ni { color: rgb(59,151,46); }
+pre.hljl > span.hljl-nil { color: rgb(59,151,46); }
+pre.hljl > span.hljl-noB { color: rgb(59,151,46); }
+pre.hljl > span.hljl-oB { color: rgb(102,102,102); font-weight: bold; }
+pre.hljl > span.hljl-ow { color: rgb(102,102,102); font-weight: bold; }
+pre.hljl > span.hljl-p { }
+pre.hljl > span.hljl-c { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-ch { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cm { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cp { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cpB { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-cs { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-csB { color: rgb(153,153,119); font-style: italic; }
+pre.hljl > span.hljl-g { }
+pre.hljl > span.hljl-gd { }
+pre.hljl > span.hljl-ge { }
+pre.hljl > span.hljl-geB { }
+pre.hljl > span.hljl-gh { }
+pre.hljl > span.hljl-gi { }
+pre.hljl > span.hljl-go { }
+pre.hljl > span.hljl-gp { }
+pre.hljl > span.hljl-gs { }
+pre.hljl > span.hljl-gsB { }
+pre.hljl > span.hljl-gt { }
+</style>
+
+
+
+  <style type="text/css">
+  @font-face {
+  font-style: normal;
+  font-weight: 300;
+}
+@font-face {
+  font-style: normal;
+  font-weight: 400;
+}
+@font-face {
+  font-style: normal;
+  font-weight: 600;
+}
+html {
+  font-family: sans-serif; /* 1 */
+  -ms-text-size-adjust: 100%; /* 2 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+body {
+  margin: 0;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+menu,
+nav,
+section,
+summary {
+  display: block;
+}
+audio,
+canvas,
+progress,
+video {
+  display: inline-block; /* 1 */
+  vertical-align: baseline; /* 2 */
+}
+audio:not([controls]) {
+  display: none;
+  height: 0;
+}
+[hidden],
+template {
+  display: none;
+}
+a:active,
+a:hover {
+  outline: 0;
+}
+abbr[title] {
+  border-bottom: 1px dotted;
+}
+b,
+strong {
+  font-weight: bold;
+}
+dfn {
+  font-style: italic;
+}
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+mark {
+  background: #ff0;
+  color: #000;
+}
+small {
+  font-size: 80%;
+}
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sup {
+  top: -0.5em;
+}
+sub {
+  bottom: -0.25em;
+}
+img {
+  border: 0;
+}
+svg:not(:root) {
+  overflow: hidden;
+}
+figure {
+  margin: 1em 40px;
+}
+hr {
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+  height: 0;
+}
+pre {
+  overflow: auto;
+}
+code,
+kbd,
+pre,
+samp {
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+button,
+input,
+optgroup,
+select,
+textarea {
+  color: inherit; /* 1 */
+  font: inherit; /* 2 */
+  margin: 0; /* 3 */
+}
+button {
+  overflow: visible;
+}
+button,
+select {
+  text-transform: none;
+}
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button; /* 2 */
+  cursor: pointer; /* 3 */
+}
+button[disabled],
+html input[disabled] {
+  cursor: default;
+}
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+input {
+  line-height: normal;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+input[type="search"] {
+  -webkit-appearance: textfield; /* 1 */
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box; /* 2 */
+  box-sizing: content-box;
+}
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+fieldset {
+  border: 1px solid #c0c0c0;
+  margin: 0 2px;
+  padding: 0.35em 0.625em 0.75em;
+}
+legend {
+  border: 0; /* 1 */
+  padding: 0; /* 2 */
+}
+textarea {
+  overflow: auto;
+}
+optgroup {
+  font-weight: bold;
+}
+table {
+  font-family: monospace, monospace;
+  font-size : 0.8em;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+td,
+th {
+  padding: 0;
+}
+thead th {
+    border-bottom: 1px solid black;
+    background-color: white;
+}
+tr:nth-child(odd){
+  background-color: rgb(248,248,248);
+}
+
+
+/*
+* Skeleton V2.0.4
+* Copyright 2014, Dave Gamache
+* www.getskeleton.com
+* Free to use under the MIT license.
+* http://www.opensource.org/licenses/mit-license.php
+* 12/29/2014
+*/
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box; }
+.column,
+.columns {
+  width: 100%;
+  float: left;
+  box-sizing: border-box; }
+@media (min-width: 400px) {
+  .container {
+    width: 85%;
+    padding: 0; }
+}
+@media (min-width: 550px) {
+  .container {
+    width: 80%; }
+  .column,
+  .columns {
+    margin-left: 4%; }
+  .column:first-child,
+  .columns:first-child {
+    margin-left: 0; }
+
+  .one.column,
+  .one.columns                    { width: 4.66666666667%; }
+  .two.columns                    { width: 13.3333333333%; }
+  .three.columns                  { width: 22%;            }
+  .four.columns                   { width: 30.6666666667%; }
+  .five.columns                   { width: 39.3333333333%; }
+  .six.columns                    { width: 48%;            }
+  .seven.columns                  { width: 56.6666666667%; }
+  .eight.columns                  { width: 65.3333333333%; }
+  .nine.columns                   { width: 74.0%;          }
+  .ten.columns                    { width: 82.6666666667%; }
+  .eleven.columns                 { width: 91.3333333333%; }
+  .twelve.columns                 { width: 100%; margin-left: 0; }
+
+  .one-third.column               { width: 30.6666666667%; }
+  .two-thirds.column              { width: 65.3333333333%; }
+
+  .one-half.column                { width: 48%; }
+
+  /* Offsets */
+  .offset-by-one.column,
+  .offset-by-one.columns          { margin-left: 8.66666666667%; }
+  .offset-by-two.column,
+  .offset-by-two.columns          { margin-left: 17.3333333333%; }
+  .offset-by-three.column,
+  .offset-by-three.columns        { margin-left: 26%;            }
+  .offset-by-four.column,
+  .offset-by-four.columns         { margin-left: 34.6666666667%; }
+  .offset-by-five.column,
+  .offset-by-five.columns         { margin-left: 43.3333333333%; }
+  .offset-by-six.column,
+  .offset-by-six.columns          { margin-left: 52%;            }
+  .offset-by-seven.column,
+  .offset-by-seven.columns        { margin-left: 60.6666666667%; }
+  .offset-by-eight.column,
+  .offset-by-eight.columns        { margin-left: 69.3333333333%; }
+  .offset-by-nine.column,
+  .offset-by-nine.columns         { margin-left: 78.0%;          }
+  .offset-by-ten.column,
+  .offset-by-ten.columns          { margin-left: 86.6666666667%; }
+  .offset-by-eleven.column,
+  .offset-by-eleven.columns       { margin-left: 95.3333333333%; }
+
+  .offset-by-one-third.column,
+  .offset-by-one-third.columns    { margin-left: 34.6666666667%; }
+  .offset-by-two-thirds.column,
+  .offset-by-two-thirds.columns   { margin-left: 69.3333333333%; }
+
+  .offset-by-one-half.column,
+  .offset-by-one-half.columns     { margin-left: 52%; }
+
+}
+html {
+  font-size: 62.5%; }
+body {
+  font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.6;
+  font-weight: 400;
+  font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #222; }
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 2rem;
+  font-weight: 300; }
+h1 { font-size: 3.6rem; line-height: 1.2;  letter-spacing: -.1rem;}
+h2 { font-size: 3.4rem; line-height: 1.25; letter-spacing: -.1rem; }
+h3 { font-size: 3.2rem; line-height: 1.3;  letter-spacing: -.1rem; }
+h4 { font-size: 2.8rem; line-height: 1.35; letter-spacing: -.08rem; }
+h5 { font-size: 2.4rem; line-height: 1.5;  letter-spacing: -.05rem; }
+h6 { font-size: 1.5rem; line-height: 1.6;  letter-spacing: 0; }
+
+p {
+  margin-top: 0; }
+a {
+  color: #1EAEDB; }
+a:hover {
+  color: #0FA0CE; }
+.button,
+button,
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  display: inline-block;
+  height: 38px;
+  padding: 0 30px;
+  color: #555;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 38px;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  box-sizing: border-box; }
+.button:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="button"]:hover,
+.button:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="reset"]:focus,
+input[type="button"]:focus {
+  color: #333;
+  border-color: #888;
+  outline: 0; }
+.button.button-primary,
+button.button-primary,
+input[type="submit"].button-primary,
+input[type="reset"].button-primary,
+input[type="button"].button-primary {
+  color: #FFF;
+  background-color: #33C3F0;
+  border-color: #33C3F0; }
+.button.button-primary:hover,
+button.button-primary:hover,
+input[type="submit"].button-primary:hover,
+input[type="reset"].button-primary:hover,
+input[type="button"].button-primary:hover,
+.button.button-primary:focus,
+button.button-primary:focus,
+input[type="submit"].button-primary:focus,
+input[type="reset"].button-primary:focus,
+input[type="button"].button-primary:focus {
+  color: #FFF;
+  background-color: #1EAEDB;
+  border-color: #1EAEDB; }
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea,
+select {
+  height: 38px;
+  padding: 6px 10px; /* The 6px vertically centers text on FF, ignored by Webkit */
+  background-color: #fff;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box; }
+/* Removes awkward default styles on some inputs for iOS */
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="password"],
+textarea {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none; }
+textarea {
+  min-height: 65px;
+  padding-top: 6px;
+  padding-bottom: 6px; }
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border: 1px solid #33C3F0;
+  outline: 0; }
+label,
+legend {
+  display: block;
+  margin-bottom: .5rem;
+  font-weight: 600; }
+fieldset {
+  padding: 0;
+  border-width: 0; }
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline; }
+label > .label-body {
+  display: inline-block;
+  margin-left: .5rem;
+  font-weight: normal; }
+ul {
+  list-style: circle; }
+ol {
+  list-style: decimal; }
+ul ul,
+ul ol,
+ol ol,
+ol ul {
+  margin: 1.5rem 0 1.5rem 3rem;
+  font-size: 90%; }
+li > p {margin : 0;}
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #E1E1E1; }
+th:first-child,
+td:first-child {
+  padding-left: 0; }
+th:last-child,
+td:last-child {
+  padding-right: 0; }
+button,
+.button {
+  margin-bottom: 1rem; }
+input,
+textarea,
+select,
+fieldset {
+  margin-bottom: 1.5rem; }
+pre,
+blockquote,
+dl,
+figure,
+table,
+p,
+ul,
+ol,
+form {
+  margin-bottom: 1.0rem; }
+.u-full-width {
+  width: 100%;
+  box-sizing: border-box; }
+.u-max-full-width {
+  max-width: 100%;
+  box-sizing: border-box; }
+.u-pull-right {
+  float: right; }
+.u-pull-left {
+  float: left; }
+hr {
+  margin-top: 3rem;
+  margin-bottom: 3.5rem;
+  border-width: 0;
+  border-top: 1px solid #E1E1E1; }
+.container:after,
+.row:after,
+.u-cf {
+  content: "";
+  display: table;
+  clear: both; }
+
+pre {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.42857143;
+  word-break: break-all;
+  word-wrap: break-word;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+pre.hljl {
+  margin: 0 0 10px;
+  display: block;
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding : 5px;
+}
+
+pre.output {
+  background: #ffffff;
+}
+
+pre.code {
+  background: #ffffff;
+}
+
+pre.julia-error {
+  color : red
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+
+@media (min-width: 400px) {}
+@media (min-width: 550px) {}
+@media (min-width: 750px) {}
+@media (min-width: 1000px) {}
+@media (min-width: 1200px) {}
+
+h1.title {margin-top : 20px}
+img {max-width : 100%}
+div.title {text-align: center;}
+
+  </style>
+</HEAD>
+
+<BODY>
+  <div class ="container">
+    <div class = "row">
+      <div class = "col-md-12 twelve columns">
+        <div class="title">
+          <h1 class="title">Modeling Bounded Confidence Updating in Julia IV</h1>
+          <h5>Igor Douven & Rainer Hegselmann</h5>
+          
+        </div>
+
+        <p>This is the final part of the tutorial, showing how to replicate some of the main results of &quot;Mis- and disinformation in a bounded confidence model&quot;, again using the <code>Agents.jl</code> package for Julia.</p>
+<p>Loading the requisite packages:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Agents</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>StatsBase</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Distributions</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>DataFrames</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>DataFramesMeta</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>LinearAlgebra</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>SharedArrays</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>LightGraphs</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>GLM</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Gadfly</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Colors</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>ColorSchemes</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Cairo</span>
+</pre>
+
+
+
+
+<pre class='hljl'>
+<span class='hljl-k'>mutable struct</span><span class='hljl-t'> </span><span class='hljl-n'>TruthSeeker</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;:</span><span class='hljl-t'> </span><span class='hljl-n'>AbstractAgent</span><span class='hljl-t'>
+    </span><span class='hljl-n'>id</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-n'>pos</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_old</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_new</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_old</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_new</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>old_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>new_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>previous_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>mutable struct</span><span class='hljl-t'> </span><span class='hljl-n'>FreeRider</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;:</span><span class='hljl-t'> </span><span class='hljl-n'>AbstractAgent</span><span class='hljl-t'>
+    </span><span class='hljl-n'>id</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-n'>pos</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_old</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_new</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_old</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_new</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>old_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>new_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>previous_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>mutable struct</span><span class='hljl-t'> </span><span class='hljl-n'>Campaigner</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;:</span><span class='hljl-t'> </span><span class='hljl-n'>AbstractAgent</span><span class='hljl-t'>
+    </span><span class='hljl-n'>id</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-n'>pos</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_old</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_new</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_old</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_new</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>old_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>new_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+    </span><span class='hljl-n'>previous_opinion</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
+</pre>
+
+
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>hk_model</span><span class='hljl-p'>(</span><span class='hljl-t'>
+    </span><span class='hljl-n'>τ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-cs'># truth</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ρ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-cs'># radical opinion</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>n0</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-t'>
+    </span><span class='hljl-n'>n</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>n0</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-t'>
+    </span><span class='hljl-n'>model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>ABM</span><span class='hljl-p'>(</span><span class='hljl-nf'>Union</span><span class='hljl-p'>{</span><span class='hljl-n'>TruthSeeker</span><span class='hljl-p'>,</span><span class='hljl-n'>FreeRider</span><span class='hljl-p'>,</span><span class='hljl-n'>Campaigner</span><span class='hljl-p'>},</span><span class='hljl-t'> </span><span class='hljl-nf'>GraphSpace</span><span class='hljl-p'>(</span><span class='hljl-nf'>complete_digraph</span><span class='hljl-p'>(</span><span class='hljl-n'>n</span><span class='hljl-p'>)),</span><span class='hljl-t'> </span><span class='hljl-n'>scheduler</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>fastest</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>properties</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Dict</span><span class='hljl-p'>(</span><span class='hljl-sc'>:τ</span><span class='hljl-oB'>=&gt;</span><span class='hljl-n'>τ</span><span class='hljl-p'>);</span><span class='hljl-t'> </span><span class='hljl-n'>warn</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-kc'>false</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-t'>
+        </span><span class='hljl-n'>e</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>α_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>l1</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>l2</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_α_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>o</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>()</span><span class='hljl-t'>
+        </span><span class='hljl-nf'>add_agent_single!</span><span class='hljl-p'>(</span><span class='hljl-nf'>TruthSeeker</span><span class='hljl-p'>(</span><span class='hljl-n'>i</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-p'>,</span><span class='hljl-t'>  </span><span class='hljl-n'>e</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>e</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>l1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>l2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>o</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>o</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-ni'>1</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-n'>n0</span><span class='hljl-t'>
+        </span><span class='hljl-n'>e</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>α_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>l</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-oB'>!</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>&lt;</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>?</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>(</span><span class='hljl-nf'>Uniform</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-n'>o</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>()</span><span class='hljl-t'>
+        </span><span class='hljl-nf'>add_agent_single!</span><span class='hljl-p'>(</span><span class='hljl-nf'>FreeRider</span><span class='hljl-p'>(</span><span class='hljl-n'>i</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>e</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>e</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>l</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>o</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>o</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-ni'>1</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-n'>n0</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-n'>n</span><span class='hljl-t'>
+        </span><span class='hljl-nf'>add_agent_single!</span><span class='hljl-p'>(</span><span class='hljl-nf'>Campaigner</span><span class='hljl-p'>(</span><span class='hljl-n'>i</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-ni'>1</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>boundfilter</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-nf'>filter</span><span class='hljl-p'>(</span><span class='hljl-n'>j</span><span class='hljl-oB'>-&gt;</span><span class='hljl-nf'>isapprox</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>j</span><span class='hljl-p'>;</span><span class='hljl-t'> </span><span class='hljl-n'>atol</span><span class='hljl-oB'>=</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-p'>])</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>boundfilter_eps</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ind</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>findall</span><span class='hljl-p'>(</span><span class='hljl-n'>j</span><span class='hljl-oB'>-&gt;</span><span class='hljl-nf'>isapprox</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>j</span><span class='hljl-p'>;</span><span class='hljl-t'> </span><span class='hljl-n'>atol</span><span class='hljl-oB'>=</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-p'>])</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-p'>][</span><span class='hljl-n'>ind</span><span class='hljl-p'>]</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>boundfilter_alp</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ind</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>findall</span><span class='hljl-p'>(</span><span class='hljl-n'>j</span><span class='hljl-oB'>-&gt;</span><span class='hljl-nf'>isapprox</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>j</span><span class='hljl-p'>;</span><span class='hljl-t'> </span><span class='hljl-n'>atol</span><span class='hljl-oB'>=</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-p'>])</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-p'>][</span><span class='hljl-n'>ind</span><span class='hljl-p'>]</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>agent_static_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>::</span><span class='hljl-n'>TruthSeeker</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-oB'>*</span><span class='hljl-n'>model</span><span class='hljl-oB'>.</span><span class='hljl-n'>τ</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-p'>)</span><span class='hljl-oB'>*</span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>agent_static_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>::</span><span class='hljl-n'>FreeRider</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>agent_static_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>::</span><span class='hljl-n'>Campaigner</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>agent_dynamic_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>::</span><span class='hljl-n'>TruthSeeker</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-oB'>*</span><span class='hljl-n'>model</span><span class='hljl-oB'>.</span><span class='hljl-n'>τ</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-p'>)</span><span class='hljl-oB'>*</span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_new</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>λ_ϵ</span><span class='hljl-oB'>*</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>λ_ϵ</span><span class='hljl-p'>)</span><span class='hljl-oB'>*</span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter_eps</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_new</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>λ_α</span><span class='hljl-oB'>*</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>λ_α</span><span class='hljl-p'>)</span><span class='hljl-oB'>*</span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter_alp</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>agent_dynamic_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>::</span><span class='hljl-n'>FreeRider</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_new</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>λ_ϵ</span><span class='hljl-oB'>*</span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>λ_ϵ</span><span class='hljl-p'>)</span><span class='hljl-oB'>*</span><span class='hljl-nf'>mean</span><span class='hljl-p'>(</span><span class='hljl-nf'>boundfilter_eps</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_new</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>agent_dynamic_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>agent</span><span class='hljl-oB'>::</span><span class='hljl-n'>Campaigner</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_new</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_new</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>agent</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>model_step!</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>old_opinion</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_old</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>ϵ_new</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_old</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>α_new</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>terminate</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>s</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>if</span><span class='hljl-t'> </span><span class='hljl-nf'>any</span><span class='hljl-p'>(</span><span class='hljl-oB'>!</span><span class='hljl-nf'>isapprox</span><span class='hljl-p'>(</span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>previous_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-oB'>.</span><span class='hljl-n'>new_opinion</span><span class='hljl-p'>;</span><span class='hljl-t'> </span><span class='hljl-n'>atol</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>1e-5</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-nf'>allagents</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>))</span><span class='hljl-t'>
+        </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-kc'>false</span><span class='hljl-t'>
+    </span><span class='hljl-k'>else</span><span class='hljl-t'>
+        </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-kc'>true</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>model_run</span><span class='hljl-p'>(</span><span class='hljl-t'> </span><span class='hljl-cs'># without ϵ-α dynamcis</span><span class='hljl-t'>
+    </span><span class='hljl-n'>τ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ρ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>iterations</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>hk_model</span><span class='hljl-p'>(</span><span class='hljl-n'>τ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-sc'>:new_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>typeof</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent_data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>_</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>run!</span><span class='hljl-p'>(</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>agent_static_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>iterations</span><span class='hljl-p'>;</span><span class='hljl-t'>
+        </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>adata</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>agent_data</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>model_run</span><span class='hljl-p'>(</span><span class='hljl-t'> </span><span class='hljl-cs'># without ϵ-α dynamcis</span><span class='hljl-t'>
+    </span><span class='hljl-n'>τ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ρ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>;</span><span class='hljl-t'>
+    </span><span class='hljl-n'>when</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-kc'>true</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>hk_model</span><span class='hljl-p'>(</span><span class='hljl-n'>τ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-sc'>:new_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>typeof</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent_data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>_</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>run!</span><span class='hljl-p'>(</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>agent_static_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>terminate</span><span class='hljl-p'>;</span><span class='hljl-t'>
+        </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>adata</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>when</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>when</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>agent_data</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>model_run</span><span class='hljl-p'>(</span><span class='hljl-t'>  </span><span class='hljl-cs'># with ϵ-α dynamcis</span><span class='hljl-t'>
+        </span><span class='hljl-n'>τ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>ρ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>λ_α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>iterations</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>hk_model</span><span class='hljl-p'>(</span><span class='hljl-n'>τ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-sc'>:new_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:ϵ_old</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:α_old</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_ϵ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_α</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>typeof</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent_data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>_</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>run!</span><span class='hljl-p'>(</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>agent_dynamic_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>iterations</span><span class='hljl-p'>;</span><span class='hljl-t'>
+        </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>adata</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>agent_data</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>model_run</span><span class='hljl-p'>(</span><span class='hljl-t'>  </span><span class='hljl-cs'># with ϵ-α dynamcis</span><span class='hljl-t'>
+    </span><span class='hljl-n'>τ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ρ</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>;</span><span class='hljl-t'>
+    </span><span class='hljl-n'>when</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-kc'>true</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>model</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>hk_model</span><span class='hljl-p'>(</span><span class='hljl-n'>τ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-sc'>:new_opinion</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:ϵ_old</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:α_old</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_ϵ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_α</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>typeof</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-n'>agent_data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>_</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>run!</span><span class='hljl-p'>(</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>agent_dynamic_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>model_step!</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>terminate</span><span class='hljl-p'>;</span><span class='hljl-t'>
+        </span><span class='hljl-n'>adata</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>adata</span><span class='hljl-p'>,</span><span class='hljl-t'>
+        </span><span class='hljl-n'>when</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>when</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>agent_data</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
+</pre>
+
+
+
+<p>Functions for simulations:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>run_sim</span><span class='hljl-p'>(</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α_low</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-oB'>::</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'>
+    </span><span class='hljl-n'>iterations</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-t'>
+    </span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>τ</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>ρ</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>rand</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>diff</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>abs</span><span class='hljl-p'>(</span><span class='hljl-n'>τ</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>data</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>model_run</span><span class='hljl-p'>(</span><span class='hljl-n'>τ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ρ</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_low</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α_upp</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>iterations</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>dat_sel</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nd'>@where</span><span class='hljl-p'>(</span><span class='hljl-n'>data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:typeof</span><span class='hljl-oB'>.==</span><span class='hljl-n'>TruthSeeker</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>sse</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>sum</span><span class='hljl-p'>(</span><span class='hljl-nf'>reshape</span><span class='hljl-p'>((</span><span class='hljl-n'>dat_sel</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:new_opinion</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>.-</span><span class='hljl-t'> </span><span class='hljl-n'>τ</span><span class='hljl-p'>)</span><span class='hljl-oB'>.^</span><span class='hljl-ni'>2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>dims</span><span class='hljl-oB'>=</span><span class='hljl-ni'>2</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>sse</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>dropdims</span><span class='hljl-p'>(</span><span class='hljl-n'>sse</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>dims</span><span class='hljl-oB'>=</span><span class='hljl-ni'>2</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-nf'>hcat</span><span class='hljl-p'>(</span><span class='hljl-n'>dat_sel</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:ϵ_old</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dat_sel</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:α_old</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dat_sel</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_ϵ</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dat_sel</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_α</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>sse</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nf'>fill</span><span class='hljl-p'>(</span><span class='hljl-n'>diff</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>conc</span><span class='hljl-p'>(</span><span class='hljl-n'>ar</span><span class='hljl-oB'>::</span><span class='hljl-n'>AbstractArray</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>ar</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-nd'>@inbounds</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-oB'>:</span><span class='hljl-nf'>size</span><span class='hljl-p'>(</span><span class='hljl-n'>ar</span><span class='hljl-p'>)[</span><span class='hljl-k'>end</span><span class='hljl-p'>]</span><span class='hljl-t'>
+        </span><span class='hljl-n'>w</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>vcat</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ar</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-p'>])</span><span class='hljl-t'>
+        </span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>w</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>main</span><span class='hljl-p'>(</span><span class='hljl-n'>numagents</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numiterations</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numsims</span><span class='hljl-oB'>::</span><span class='hljl-n'>Int</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>v</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Array</span><span class='hljl-p'>{</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-ni'>3</span><span class='hljl-p'>}(</span><span class='hljl-n'>undef</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numsims</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-nd'>@inbounds</span><span class='hljl-t'> </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-n'>numsims</span><span class='hljl-t'>
+        </span><span class='hljl-n'>v</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>run_sim</span><span class='hljl-p'>(</span><span class='hljl-nfB'>.0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>.0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>.0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>.0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nfB'>1.</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numagents</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numfreeriders</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numcampaigners</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>numiterations</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>v</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>grid_main</span><span class='hljl-p'>()</span><span class='hljl-t'>
+    </span><span class='hljl-n'>grid</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>collect</span><span class='hljl-p'>(</span><span class='hljl-n'>Base</span><span class='hljl-oB'>.</span><span class='hljl-nf'>product</span><span class='hljl-p'>([</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>20</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>30</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>40</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>50</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-ni'>0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>10</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>20</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>30</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>40</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>50</span><span class='hljl-p'>]))</span><span class='hljl-t'>
+    </span><span class='hljl-n'>cfs_and_pvals</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Array</span><span class='hljl-p'>{</span><span class='hljl-n'>Float64</span><span class='hljl-p'>,</span><span class='hljl-ni'>3</span><span class='hljl-p'>}(</span><span class='hljl-n'>undef</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nf'>length</span><span class='hljl-p'>(</span><span class='hljl-n'>grid</span><span class='hljl-p'>))</span><span class='hljl-t'>
+    </span><span class='hljl-k'>for</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-t'> </span><span class='hljl-kp'>in</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-nf'>length</span><span class='hljl-p'>(</span><span class='hljl-n'>grid</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>a</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>b</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>grid</span><span class='hljl-p'>[</span><span class='hljl-n'>i</span><span class='hljl-p'>]</span><span class='hljl-t'>
+        </span><span class='hljl-n'>res</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>main</span><span class='hljl-p'>(</span><span class='hljl-ni'>50</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>a</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>b</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>50</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>1000</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>res</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>conc</span><span class='hljl-p'>(</span><span class='hljl-n'>res</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>res</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>DataFrame</span><span class='hljl-p'>(</span><span class='hljl-n'>λ_ϵ</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>3</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>4</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>SSE</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>5</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dif</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>])</span><span class='hljl-t'>
+        </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_ϵ</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>standardize</span><span class='hljl-p'>(</span><span class='hljl-n'>ZScoreTransform</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_ϵ</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dims</span><span class='hljl-oB'>=</span><span class='hljl-ni'>1</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_α</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>standardize</span><span class='hljl-p'>(</span><span class='hljl-n'>ZScoreTransform</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:λ_α</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dims</span><span class='hljl-oB'>=</span><span class='hljl-ni'>1</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:dif</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>standardize</span><span class='hljl-p'>(</span><span class='hljl-n'>ZScoreTransform</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>[</span><span class='hljl-oB'>!</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-sc'>:dif</span><span class='hljl-p'>],</span><span class='hljl-t'> </span><span class='hljl-n'>dims</span><span class='hljl-oB'>=</span><span class='hljl-ni'>1</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>m</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>lm</span><span class='hljl-p'>(</span><span class='hljl-nd'>@formula</span><span class='hljl-p'>(</span><span class='hljl-n'>SSE</span><span class='hljl-t'> </span><span class='hljl-oB'>~</span><span class='hljl-t'> </span><span class='hljl-n'>λ_ϵ</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-n'>λ_α</span><span class='hljl-t'> </span><span class='hljl-oB'>+</span><span class='hljl-t'> </span><span class='hljl-n'>dif</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>res</span><span class='hljl-p'>)</span><span class='hljl-t'>
+        </span><span class='hljl-n'>cfs</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>coef</span><span class='hljl-p'>(</span><span class='hljl-n'>m</span><span class='hljl-p'>)[</span><span class='hljl-ni'>2</span><span class='hljl-oB'>:</span><span class='hljl-ni'>4</span><span class='hljl-p'>]</span><span class='hljl-t'>
+        </span><span class='hljl-n'>pvals</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>coeftable</span><span class='hljl-p'>(</span><span class='hljl-n'>m</span><span class='hljl-p'>)</span><span class='hljl-oB'>.</span><span class='hljl-n'>cols</span><span class='hljl-p'>[</span><span class='hljl-ni'>4</span><span class='hljl-p'>][</span><span class='hljl-ni'>2</span><span class='hljl-oB'>:</span><span class='hljl-ni'>4</span><span class='hljl-p'>]</span><span class='hljl-t'>
+        </span><span class='hljl-n'>cfs_and_pvals</span><span class='hljl-p'>[</span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>i</span><span class='hljl-p'>]</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-p'>[</span><span class='hljl-n'>cfs</span><span class='hljl-t'> </span><span class='hljl-n'>pvals</span><span class='hljl-p'>]</span><span class='hljl-t'>
+    </span><span class='hljl-k'>end</span><span class='hljl-t'> 
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-n'>cfs_and_pvals</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span>
+</pre>
+
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>out</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>grid_main</span><span class='hljl-p'>()</span>
+</pre>
+
+
+<pre class="output">
+3×2×36 Array&#123;Float64,3&#125;:
+&#91;:, :, 1&#93; &#61;
+ 0.00451308  0.000265469
+ 0.00426981  0.000559728
+ 0.035321    9.22166e-178
+
+&#91;:, :, 2&#93; &#61;
+  0.00696406  0.000113472
+ -0.00320182  0.0759521
+  0.0411619   1.23825e-114
+
+&#91;:, :, 3&#93; &#61;
+  0.0106379   6.30655e-7
+ -0.00710948  0.000870033
+  0.052147    5.74729e-131
+
+...
+
+&#91;:, :, 34&#93; &#61;
+  0.264172  7.4559e-41
+ -0.589469  1.24984e-194
+  3.37786   0.0
+
+&#91;:, :, 35&#93; &#61;
+  0.147213  9.02096e-13
+ -0.673695  3.79123e-232
+  4.65779   0.0
+
+&#91;:, :, 36&#93; &#61;
+  0.0512866  0.00911818
+ -0.727041   3.78241e-295
+  5.19388    0.0
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-n'>le_cf</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>out</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>]</span><span class='hljl-t'>
+</span><span class='hljl-n'>le_p</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>out</span><span class='hljl-p'>[</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>]</span>
+</pre>
+
+
+
+<p>Plot results &#40;here only shown for λ_ϵ&#41;:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>xlabelname</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>n</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>*</span><span class='hljl-ni'>10</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;</span><span class='hljl-si'>$n</span><span class='hljl-s'>&quot;</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>ylabelname</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-p'>)</span><span class='hljl-t'>
+    </span><span class='hljl-n'>n</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-ni'>60</span><span class='hljl-t'> </span><span class='hljl-oB'>-</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>*</span><span class='hljl-ni'>10</span><span class='hljl-t'>
+    </span><span class='hljl-k'>return</span><span class='hljl-t'> </span><span class='hljl-s'>&quot;</span><span class='hljl-si'>$n</span><span class='hljl-s'>&quot;</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>ticks</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>collect</span><span class='hljl-p'>(</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>6</span><span class='hljl-p'>)</span><span class='hljl-t'>
+
+</span><span class='hljl-n'>Gadfly</span><span class='hljl-oB'>.</span><span class='hljl-nf'>spy</span><span class='hljl-p'>(</span><span class='hljl-nf'>reshape</span><span class='hljl-p'>(</span><span class='hljl-n'>le_cf</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-p'>(</span><span class='hljl-ni'>6</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-ni'>6</span><span class='hljl-p'>))[</span><span class='hljl-k'>end</span><span class='hljl-oB'>:-</span><span class='hljl-ni'>1</span><span class='hljl-oB'>:</span><span class='hljl-ni'>1</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-oB'>:</span><span class='hljl-p'>],</span><span class='hljl-t'>
+    </span><span class='hljl-n'>Guide</span><span class='hljl-oB'>.</span><span class='hljl-nf'>ColorKey</span><span class='hljl-p'>(</span><span class='hljl-n'>title</span><span class='hljl-oB'>=</span><span class='hljl-s'>&quot;Coefficient &quot;</span><span class='hljl-p'>),</span><span class='hljl-t'>
+    </span><span class='hljl-n'>Guide</span><span class='hljl-oB'>.</span><span class='hljl-nf'>xlabel</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;Campaigners&quot;</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>Guide</span><span class='hljl-oB'>.</span><span class='hljl-nf'>ylabel</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;Free riders&quot;</span><span class='hljl-p'>),</span><span class='hljl-t'>
+    </span><span class='hljl-n'>Guide</span><span class='hljl-oB'>.</span><span class='hljl-nf'>title</span><span class='hljl-p'>(</span><span class='hljl-s'>&quot;λ&lt;sub&gt;ϵ&lt;/sub&gt;&quot;</span><span class='hljl-p'>),</span><span class='hljl-t'>
+    </span><span class='hljl-n'>Guide</span><span class='hljl-oB'>.</span><span class='hljl-nf'>xticks</span><span class='hljl-p'>(</span><span class='hljl-n'>ticks</span><span class='hljl-oB'>=</span><span class='hljl-n'>ticks</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>Scale</span><span class='hljl-oB'>.</span><span class='hljl-nf'>x_continuous</span><span class='hljl-p'>(</span><span class='hljl-n'>labels</span><span class='hljl-oB'>=</span><span class='hljl-n'>xlabelname</span><span class='hljl-p'>),</span><span class='hljl-t'>
+    </span><span class='hljl-n'>Guide</span><span class='hljl-oB'>.</span><span class='hljl-nf'>yticks</span><span class='hljl-p'>(</span><span class='hljl-n'>ticks</span><span class='hljl-oB'>=</span><span class='hljl-n'>ticks</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>Scale</span><span class='hljl-oB'>.</span><span class='hljl-nf'>y_continuous</span><span class='hljl-p'>(</span><span class='hljl-n'>labels</span><span class='hljl-oB'>=</span><span class='hljl-n'>ylabelname</span><span class='hljl-p'>),</span><span class='hljl-t'>
+    </span><span class='hljl-n'>Scale</span><span class='hljl-oB'>.</span><span class='hljl-nf'>ContinuousColorScale</span><span class='hljl-p'>(</span><span class='hljl-n'>p</span><span class='hljl-t'> </span><span class='hljl-oB'>-&gt;</span><span class='hljl-t'> </span><span class='hljl-nf'>get</span><span class='hljl-p'>(</span><span class='hljl-n'>ColorSchemes</span><span class='hljl-oB'>.</span><span class='hljl-n'>viridis</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>p</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>minvalue</span><span class='hljl-oB'>=</span><span class='hljl-nf'>minimum</span><span class='hljl-p'>(</span><span class='hljl-n'>le_cf</span><span class='hljl-p'>),</span><span class='hljl-t'> </span><span class='hljl-n'>maxvalue</span><span class='hljl-oB'>=</span><span class='hljl-nf'>maximum</span><span class='hljl-p'>(</span><span class='hljl-n'>le_cf</span><span class='hljl-p'>)),</span><span class='hljl-t'>
+    </span><span class='hljl-nf'>Theme</span><span class='hljl-p'>(</span><span class='hljl-n'>grid_color</span><span class='hljl-oB'>=</span><span class='hljl-so'>colorant&quot;white&quot;</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>panel_fill</span><span class='hljl-oB'>=</span><span class='hljl-s'>&quot;white&quot;</span><span class='hljl-p'>))</span>
+</pre>
+
+
+<img src="data:image/png;base64,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"  />
+
+
+        <HR/>
+        <div class="footer">
+          <p>
+            Published from <a href="bcu4.jmd">bcu4.jmd</a>
+            using <a href="http://github.com/JunoLab/Weave.jl">Weave.jl</a> v0.10.2 on 2020-07-08.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BODY>
+
+</HTML>
